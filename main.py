@@ -1,6 +1,6 @@
 import os,json as J,urllib.request as U
 V=(0,100,320,330,500,950,0)
-D8=(-16,-15,1,17,16,15,-1,-17);DR=D8[::2];DB=D8[1::2];DN=(-33,-31,-18,-14,14,18,31,33)
+D8=(-16,-15,1,17,16,15,-1,-17);DR=D8[::2];DB=D8[1::2];DN=(-33,-31,-18,-14,14,18,31,33);SQ=[s for s in range(128)if not s&136]
 def P(fen):
  a=fen.split();b=[0]*128;r=7;f=0
  for c in a[0]:
@@ -26,7 +26,8 @@ def A(b,sq,by):
  return 0
 def G(pos,cap=0):
  b=pos[0];tm=pos[1];res=[]
- for sq,p in enumerate(b):
+ for sq in SQ:
+  p=b[sq]
   if not p or(p>0)!=(tm>0):continue
   ap=abs(p)
   if ap==1:
@@ -63,7 +64,8 @@ def M(pos,m):
 def E(pos):
  b=pos[0];s=0
  ph=sum((0,0,1,1,2,4,0)[abs(x)]for x in b if x)
- for sq,p in enumerate(b):
+ for sq in SQ:
+  p=b[sq]
   if not p:continue
   ap=abs(p);r,f=sq>>4,sq&7;w=p>0;c=min(r,7-r)+min(f,7-f);y=r if w else 7-r
   if ap==1:v=(y*y*3)//2+min(f,7-f)*3-3
@@ -73,7 +75,7 @@ def E(pos):
   else:v=c*7-30 if ph<=6 else-30-y*10
   s+=(V[ap]+v)*(1 if w else-1)
  return s*pos[1]
-TT={};HP=set();ND=[0];BUD=100000
+TT={};HP=set();ND=[0];BUD=72000
 def KEY(pos):return(tuple(pos[0]),pos[1],pos[2])
 def OM(pos,moves,ttm,ply):
  b=pos[0]
@@ -100,8 +102,8 @@ def S(pos,d,a,be,ply):
   np,cap=M(pos,m)
   if cap and abs(cap)==6:return 100000-ply
   n+=1
-  if not q and d>=3 and n>3 and not cap and not m[2]:
-   sc=-S(np,d-2,-a-1,-a,ply+1)
+  if not q and n>1:
+   sc=-S(np,d-2 if(d>=3 and n>3 and not cap and not m[2])else d-1,-a-1,-a,ply+1)
    if a<sc<be:sc=-S(np,d-1,-be,-a,ply+1)
   else:sc=-S(np,d-1,-be,-a,ply+1)
   if sc>best:best=sc;bm=m
@@ -112,7 +114,6 @@ def S(pos,d,a,be,ply):
  TT[key]=(d,0 if a0<best<be else(2 if best<=a0 else 1),best,bm);return best
 def BM(pos):
  ND[0]=0
- if len(HP)>250:HP.clear()
  HP.add(KEY(pos));bm=G(pos)[0];d=1
  try:
   while ND[0]<BUD:
@@ -120,7 +121,7 @@ def BM(pos):
    if e:=TT.get(KEY(pos)):bm=e[3]
    d+=1
  except AssertionError:pass
- HP.add(KEY(M(pos,bm)[0]));return bm
+ return bm
 env=os.environ['MAKEFUN_ENV_URL']
 post=lambda pa,bo:J.load(U.urlopen(U.Request(env+pa,data=J.dumps(bo).encode())))
 while True:
