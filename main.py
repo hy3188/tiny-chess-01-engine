@@ -75,7 +75,7 @@ def E(pos):
   else:v=c*7-30 if ph<=6 else-30-y*10
   s+=(V[ap]+v)*(1 if w else-1)
  return s*pos[1]
-TT={};HP=set();ND=[0];BUD=72000
+TT={};HP=set();ND=[0];BUD=100000
 def KEY(pos):return(tuple(pos[0]),pos[1],pos[2])
 def OM(pos,moves,ttm,ply):
  b=pos[0]
