@@ -75,7 +75,7 @@ def E(pos):
   else:v=c*7-30 if ph<=6 else-30-y*10
   s+=(V[ap]+v)*(1 if w else-1)
  return s*pos[1]
-TT={};HP=set();ND=[0];BUD=100000
+TT={};HP=set();ND=[0];BUD=200000
 def KEY(pos):return(tuple(pos[0]),pos[1],pos[2])
 def OM(pos,moves,ttm,ply):
  b=pos[0]
@@ -114,6 +114,7 @@ def S(pos,d,a,be,ply):
  TT[key]=(d,0 if a0<best<be else(2 if best<=a0 else 1),best,bm);return best
 def BM(pos):
  ND[0]=0
+ if len(TT)>150000:TT.clear()
  HP.add(KEY(pos));bm=G(pos)[0];d=1
  try:
   while ND[0]<BUD:
@@ -123,12 +124,12 @@ def BM(pos):
  except AssertionError:pass
  return bm
 env=os.environ['MAKEFUN_ENV_URL']
-post=lambda pa,bo:J.load(U.urlopen(U.Request(env+pa,data=J.dumps(bo).encode())))
+post=lambda pa,bo:J.load(U.urlopen(env+pa,J.dumps(bo).encode()))
 while True:
  g=post('/game',{});s=g['status']
  if s=='done':break
  while s=='your_move':
   m=BM(P(g['fen']));frm,to,pro=m
   u=''.join(chr(97+(x&7))+chr(49+(x>>4))for x in(frm,to))
-  if pro:u+='qrbn'[5-pro]
+  if pro:u+='q'
   g=post('/move',{'game':g['game'],'move':u});s=g['status']
